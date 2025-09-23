@@ -11,23 +11,34 @@ interface Series {
 
 // This function runs on the server to fetch the static data for the page
 async function getSeriesData(id: string): Promise<Series | null> {
-  try {
-    // ========================================================================
-    //  IMPORTANT: Replace the URL below with your actual deployed Worker URL
-    //  You got this URL at the end of the backend deployment phase.
-    // ========================================================================
-    const apiUrl = `https://manga-api.warpe.workers.dev/api/series/${id}`;
+  // ========================================================================
+  //  Make 100% sure this URL is correct before you save and push!
+  // ========================================================================
+  const apiUrl = `https://manga-api.warpe.workers.dev/api/series/${id}`;
 
-    // This tells Next.js to cache the result for 1 hour (3600 seconds)
+  console.log(`BUILD LOG: Attempting to fetch data from: ${apiUrl}`); // <-- DEBUG LINE
+
+  try {
     const res = await fetch(apiUrl, { next: { revalidate: 3600 } });
 
-    if (!res.ok) return null;
-    return res.json();
+    console.log(`BUILD LOG: API response status: ${res.status}`); // <-- DEBUG LINE
+    console.log(`BUILD LOG: API response OK: ${res.ok}`); // <-- DEBUG LINE
+
+    if (!res.ok) {
+      console.error(`BUILD LOG: API fetch failed with status: ${res.status}`);
+      return null;
+    }
+    
+    const data = await res.json();
+    console.log("BUILD LOG: Successfully fetched and parsed JSON data.");
+    return data;
+
   } catch (error) {
-    console.error("Failed to fetch series data:", error);
+    console.error("BUILD LOG: A critical error occurred during fetch:", error); // <-- DEBUG LINE
     return null;
   }
 }
+
 
 // This is the main component for our page
 export default async function SeriesPage({ params }: { params: { id: string } }) {
