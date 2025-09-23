@@ -2,6 +2,8 @@
 
 import ReviewsSection from "./ReviewsSection"; // We will create this component in the next step
 
+export const runtime = 'edge';
+
 // This defines the structure of our series data for TypeScript
 interface Series {
   id: number;
