@@ -1,8 +1,9 @@
 // src/app/series/[id]/ReviewsSection.tsx
 
-"use client"; // This directive is ESSENTIAL. It marks this as a Client Component.
+"use client";
 
-import { useState, useEffect, FormEvent } from 'react';
+// Import useCallback along with the other hooks
+import { useState, useEffect, FormEvent, useCallback } from 'react';
 
 // Define the structure of a review object
 interface Review {
@@ -13,7 +14,7 @@ interface Review {
 }
 
 export default function ReviewsSection({ seriesId }: { seriesId: number }) {
-  // React state variables to manage data and UI status
+  // State variables to manage data and UI status
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,33 +22,33 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
   const [newBody, setNewBody] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // This function fetches the list of reviews from our API
-  const fetchReviews = async () => {
+  // Define fetchReviews outside of useEffect, wrapped in useCallback.
+  // This makes it a stable function that can be used as a dependency and called from anywhere.
+  const fetchReviews = useCallback(async () => {
     setIsLoading(true);
     try {
-      // ========================================================================
-      //  IMPORTANT: Replace this URL with your actual deployed Worker URL
-      // ========================================================================
       const apiUrl = `https://manga-api.warpe.workers.dev/api/series/${seriesId}/reviews`;
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("Failed to fetch reviews.");
       const data = await res.json();
       setReviews(data);
     } catch (err) {
-      setError("Could not load reviews. Please try refreshing the page.");
+      if (err instanceof Error) {
+        setError("Could not load reviews. Please try refreshing the page.");
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [seriesId]); // It only re-creates this function if seriesId changes.
 
-  // This hook calls fetchReviews() once when the component first loads
+  // This hook now calls the stable fetchReviews function once on load.
   useEffect(() => {
     fetchReviews();
-  }, [seriesId]);
+  }, [fetchReviews]); // The dependency is now the stable function itself.
 
   // This function handles the form submission
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault(); // Prevent the browser from reloading the page
+    e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
@@ -64,18 +65,23 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
         throw new Error(errorData.error || "An unknown error occurred.");
       }
 
-      // On success, clear the form and reload the reviews list
+      // On success, clear the form AND reload the reviews list.
       setNewBody("");
       setNewRating(8);
-      fetchReviews();
+      fetchReviews(); // <-- THIS IS THE FIX!
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // The JSX is unchanged
   return (
     <div>
       <h2 className="text-3xl font-bold mb-6 text-gray-900">Reviews</h2>
