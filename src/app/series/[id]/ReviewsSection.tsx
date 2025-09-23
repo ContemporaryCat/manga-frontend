@@ -28,7 +28,7 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
       // ========================================================================
       //  IMPORTANT: Replace this URL with your actual deployed Worker URL
       // ========================================================================
-      const apiUrl = `https://manga-api.YOUR-SUBDOMAIN.workers.dev/api/series/${seriesId}/reviews`;
+      const apiUrl = `https:///manga-api.warpe.workers.dev/api/series/${seriesId}/reviews`;
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("Failed to fetch reviews.");
       const data = await res.json();
