@@ -16,7 +16,7 @@ async function getSeriesData(id: string): Promise<Series | null> {
     //  IMPORTANT: Replace the URL below with your actual deployed Worker URL
     //  You got this URL at the end of the backend deployment phase.
     // ========================================================================
-    const apiUrl = `https:///manga-api.warpe.workers.dev/api/series/${id}`;
+    const apiUrl = `https://manga-api.warpe.workers.dev/api/series/${id}`;
 
     // This tells Next.js to cache the result for 1 hour (3600 seconds)
     const res = await fetch(apiUrl, { next: { revalidate: 3600 } });
