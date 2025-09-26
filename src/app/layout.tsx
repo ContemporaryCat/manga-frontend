@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import FontAwesomeLoader from "@/components/FontAwesomeLoader"; // MODIFICATION: Import the new component
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,19 +19,26 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* --- THIS IS THE FIX --- */}
-        {/* Preload the stylesheet without blocking rendering */}
-        <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" />
+        {/* This part is now static and safe for a Server Component. */}
+        {/* It tells the browser to start downloading the CSS early. */}
+        <link 
+          rel="preload" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          as="style" 
+        />
         
-        {/* Apply the stylesheet once it's loaded */}
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onLoad={(e) => (e.currentTarget.media = 'all')} />
-        
-        {/* Fallback for browsers without JavaScript */}
+        {/* This is a fallback for users with JavaScript disabled. */}
         <noscript>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
         </noscript>
         {/* --------------------- */}
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {/* MODIFICATION: We render the new Client Component here. */}
+        {/* It will run in the browser and handle activating the preloaded stylesheet. */}
+        <FontAwesomeLoader /> 
+        {children}
+      </body>
     </html>
   );
 }
