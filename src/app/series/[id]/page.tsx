@@ -2,6 +2,7 @@
 
 import ReviewsSection from "./ReviewsSection";
 import type { Metadata } from "next"; // MODIFICATION: Import Metadata type for dynamic titles
+import Image from 'next/image';
 
 export const runtime = 'edge';
 
@@ -32,19 +33,19 @@ interface Series {
 
 // NEW: Helper function to get the correct icon and title for external links
 const getLinkIcon = (url: string) => {
-    try {
-        const domain = new URL(url).hostname.replace('www.', '');
-        if (domain.includes('tappytoon.com')) return { icon: 'fas fa-book-open', title: 'Tappytoon' };
-        if (domain.includes('amazon')) return { icon: 'fab fa-amazon', title: 'Amazon' };
-        if (domain.includes('kakao.com')) return { icon: 'fas fa-globe', title: 'KakaoPage' };
-        if (domain.includes('anime-planet.com')) return { icon: 'fas fa-rocket', title: 'Anime-Planet' };
-        if (domain.includes('myanimelist.net')) return { icon: 'fas fa-star', title: 'MyAnimeList' };
-        if (domain.includes('anilist.co')) return { icon: 'fa-solid fa-a', title: 'Anilist' };
-        // Add more mappings here for other sites
-        return { icon: 'fas fa-link', title: 'Official Link' }; // Default fallback
-    } catch (e) {
-        return { icon: 'fas fa-link', title: 'Official Link' }; // Fallback for invalid URLs
-    }
+  try {
+    const domain = new URL(url).hostname.replace('www.', '');
+    if (domain.includes('tappytoon.com')) return { icon: 'fas fa-book-open', title: 'Tappytoon' };
+    if (domain.includes('amazon')) return { icon: 'fab fa-amazon', title: 'Amazon' };
+    if (domain.includes('kakao.com')) return { icon: 'fas fa-globe', title: 'KakaoPage' };
+    if (domain.includes('anime-planet.com')) return { icon: 'fas fa-rocket', title: 'Anime-Planet' };
+    if (domain.includes('myanimelist.net')) return { icon: 'fas fa-star', title: 'MyAnimeList' };
+    if (domain.includes('anilist.co')) return { icon: 'fa-solid fa-a', title: 'Anilist' };
+    // Add more mappings here for other sites
+    return { icon: 'fas fa-link', title: 'Official Link' }; // Default fallback
+  } catch (e) {
+    return { icon: 'fas fa-link', title: 'Official Link' }; // Fallback for invalid URLs
+  }
 };
 
 // MODIFICATION: Updated the return type to Promise<Series | null> and removed debug logs
@@ -91,8 +92,14 @@ export default async function SeriesPage({ params }: { params: { id: string } })
     <>
       <div className="container">
         <div className="left-column">
-          <img src={series.covers?.default} alt={`${series.title} Cover`} className="cover-image" />
-          
+          <Image
+            src={series.covers?.default || ''}
+            alt={`${series.title} Cover`}
+            className="cover-image"
+            width={350}  // The width from your CSS
+            height={513} // A common aspect ratio for this width
+            priority={true} // Tells Next.js this is an important image to load first
+          />
           {series.links && series.links.length > 0 && (
             <div className="external-links">
               {series.links.map(link => {
@@ -123,7 +130,7 @@ export default async function SeriesPage({ params }: { params: { id: string } })
 
         <div className="right-column">
           <h1 className="title">{series.title}</h1>
-          
+
           {series.alternative_titles && series.alternative_titles.length > 0 && (
             <div className="alt-titles">
               <span>{series.alternative_titles.join(', ')}</span>
