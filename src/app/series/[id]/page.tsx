@@ -99,6 +99,7 @@ export default async function SeriesPage({ params }: { params: { id: string } })
             width={350}  // The width from your CSS
             height={513} // A common aspect ratio for this width
             priority={true} // Tells Next.js this is an important image to load first
+            unoptimized={true} 
           />
           {series.links && series.links.length > 0 && (
             <div className="external-links">
