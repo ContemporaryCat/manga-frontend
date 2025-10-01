@@ -1,4 +1,4 @@
-import NextAuth, { User } from "next-auth"
+import NextAuth, { Session, User } from "next-auth"
 import { JWT } from "next-auth/jwt"
 import GithubProvider from "next-auth/providers/github"
 
@@ -24,7 +24,7 @@ export const authOptions = {
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: JWT }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       session.user.name = token.name;
       session.user.image = token.picture;
       session.jwt = token;
