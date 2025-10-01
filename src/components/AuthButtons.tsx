@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signIn, signOut } from "@auth/next/react";
 
 export default function AuthButtons() {
   const { data: session } = useSession();
