@@ -1,6 +1,10 @@
 import NextAuth from "next-auth"
 import GithubProvider from "next-auth/providers/github"
 
+if (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET || !process.env.NEXTAUTH_SECRET) {
+  throw new Error("Missing environment variables for authentication");
+}
+
 export const authOptions = {
   providers: [
     GithubProvider({
