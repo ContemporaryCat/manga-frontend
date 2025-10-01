@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import NextAuth, { Session, SessionStrategy, User } from "next-auth"
 import { JWT } from "next-auth/jwt"
