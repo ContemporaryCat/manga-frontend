@@ -10,8 +10,6 @@ export const metadata: Metadata = {
   description: "A Comic and Novel Site",
 };
 
-import SessionProvider from "./SessionProvider";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,12 +34,10 @@ export default function RootLayout({
         {/* --------------------- */}
       </head>
       <body className={inter.className}>
-        <SessionProvider>
-          {/* MODIFICATION: We render the new Client Component here. */}
-          {/* It will run in the browser and handle activating the preloaded stylesheet. */}
-          <FontAwesomeLoader /> 
-          {children}
-        </SessionProvider>
+        {/* MODIFICATION: We render the new Client Component here. */}
+        {/* It will run in the browser and handle activating the preloaded stylesheet. */}
+        <FontAwesomeLoader /> 
+        {children}
       </body>
     </html>
   );
