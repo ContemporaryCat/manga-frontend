@@ -1,4 +1,5 @@
-import NextAuth from "next-auth"
+import NextAuth, { User } from "next-auth"
+import { JWT } from "next-auth/jwt"
 import GithubProvider from "next-auth/providers/github"
 
 if (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET || !process.env.NEXTAUTH_SECRET) {
@@ -16,14 +17,14 @@ export const authOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user: User }) {
       if (user) {
         token.name = user.name;
         token.picture = user.image;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: JWT }) {
       session.user.name = token.name;
       session.user.image = token.picture;
       session.jwt = token;
