@@ -1,4 +1,4 @@
-import NextAuth, { Session, User } from "next-auth"
+import NextAuth, { Session, SessionStrategy, User } from "next-auth"
 import { JWT } from "next-auth/jwt"
 import GithubProvider from "next-auth/providers/github"
 
@@ -14,7 +14,7 @@ export const authOptions = {
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy,
   },
   callbacks: {
     async jwt({ token, user }: { token: JWT; user: User }) {
