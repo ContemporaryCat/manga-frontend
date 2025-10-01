@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import NextAuth, { Session, SessionStrategy, User } from "next-auth"
 import { JWT } from "next-auth/jwt"
 import GithubProvider from "next-auth/providers/github"
