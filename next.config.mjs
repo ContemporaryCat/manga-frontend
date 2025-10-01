@@ -1,6 +1,3 @@
-// next.config.mjs
-import path from 'path'; // Import path module
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     compiler: {
@@ -21,15 +18,6 @@ const nextConfig = {
                 hostname: 's4.anilist.co',
             }
         ],
-    },
-    transpilePackages: ['@auth/next'],
-    webpack: (config, { isServer }) => {
-        // Add a custom alias for @auth/next/react
-        config.resolve.alias['@auth/next/react'] = path.resolve(
-            process.cwd(),
-            'node_modules/@auth/next/react'
-        );
-        return config;
     },
 };
 
