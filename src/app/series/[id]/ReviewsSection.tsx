@@ -5,15 +5,22 @@
 // Import useCallback along with the other hooks
 import { useState, useEffect, FormEvent, useCallback } from 'react';
 
+import { useSession } from "next-auth/react";
+
 // Define the structure of a review object
 interface Review {
   id: number;
   rating: number;
   body: string;
   created_at: string;
+  user: {
+    name: string;
+    image: string;
+  };
 }
 
 export default function ReviewsSection({ seriesId }: { seriesId: number }) {
+  const { data: session } = useSession();
   // State variables to manage data and UI status
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,12 +59,24 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
     setIsSubmitting(true);
     setError(null);
 
+    if (!session) {
+      setError("You must be signed in to leave a review.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const apiUrl = `https://manga-api.warpe.workers.dev/api/series/${seriesId}/reviews`;
       const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: Number(newRating), body: newBody }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.jwt}`
+        },
+        body: JSON.stringify({
+          rating: Number(newRating),
+          body: newBody,
+        }),
       });
 
       if (!res.ok) {
@@ -83,32 +102,97 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
 
   // The JSX is unchanged
   return (
-    <div>
-      <h2 className="text-3xl font-bold mb-6 text-gray-900">Reviews</h2>
-      <form onSubmit={handleSubmit} className="mb-10 p-6 border border-gray-200 rounded-lg bg-gray-50">
-        <h3 className="text-xl font-semibold mb-4">Leave a Review</h3>
-        <div className="mb-4">
-          <label htmlFor="rating" className="block font-medium mb-2 text-gray-700">Rating: <span className="font-bold">{newRating} / 10</span></label>
-          <input id="rating" type="range" min="1" max="10" value={newRating} onChange={(e) => setNewRating(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h2 className="text-4xl font-extrabold mb-8 text-gray-900">Customer Reviews</h2>
+
+      {/* Review Submission Form */}
+      {session ? (
+        <form onSubmit={handleSubmit} className="mb-12 p-8 bg-white rounded-2xl shadow-lg transition-shadow duration-300 hover:shadow-xl">
+          <h3 className="text-2xl font-bold mb-6 text-gray-800">Leave a Review</h3>
+          
+          {/* Rating Slider */}
+          <div className="mb-6">
+            <label htmlFor="rating" className="block font-semibold mb-3 text-gray-700 text-lg">
+              Rating: <span className="font-black text-indigo-600">{newRating} / 10</span>
+            </label>
+            <input 
+              id="rating" 
+              type="range" 
+              min="1" 
+              max="10" 
+              value={newRating} 
+              onChange={(e) => setNewRating(Number(e.target.value))} 
+              className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
+              style={{
+                background: `linear-gradient(to right, #4f46e5 ${newRating * 10}%, #e5e7eb ${newRating * 10}%)`
+              }}
+            />
+          </div>
+
+          {/* Review Text Area */}
+          <div className="mb-6">
+            <label htmlFor="body" className="block font-semibold mb-3 text-gray-700 text-lg">Your Review</label>
+            <textarea 
+              id="body" 
+              rows={6} 
+              value={newBody} 
+              onChange={(e) => setNewBody(e.target.value)} 
+              maxLength={7500} 
+              placeholder="Share your thoughts on the series. What did you like or dislike?" 
+              className="w-full p-4 border border-gray-300 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 shadow-sm" 
+              required 
+            />
+          </div>
+
+          {/* Error Message */}
+          {error && <p className="text-red-600 mb-6 bg-red-100 p-3 rounded-lg">{error}</p>}
+
+          {/* Submit Button */}
+          <button 
+            type="submit" 
+            disabled={isSubmitting} 
+            className="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-xl shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Review"}
+          </button>
+        </form>
+      ) : (
+        <div className="text-center py-10 bg-gray-50 rounded-xl">
+          <p className="text-xl font-semibold text-gray-700">Want to leave a review?</p>
+          <p className="text-gray-500">Sign in to share your thoughts with the community.</p>
         </div>
-        <div className="mb-4">
-          <label htmlFor="body" className="block font-medium mb-2 text-gray-700">Review Text</label>
-          <textarea id="body" rows={5} value={newBody} onChange={(e) => setNewBody(e.target.value)} maxLength={7500} placeholder="What did you think of this series?" className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required />
-        </div>
-        {error && <p className="text-red-600 mb-4">{error}</p>}
-        <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-          {isSubmitting ? "Submitting..." : "Submit Review"}
-        </button>
-      </form>
+      )}
+
+      {/* Display Reviews Section */}
       <div>
-        {isLoading && <p>Loading reviews...</p>}
-        {!isLoading && reviews.length === 0 && <p>No reviews yet. Be the first!</p>}
-        <div className="space-y-6">
+        {isLoading && (
+          <div className="text-center">
+            <p className="text-lg font-semibold text-gray-600">Loading reviews...</p>
+            {/* You can add a spinner here */}
+          </div>
+        )}
+        
+        {!isLoading && reviews.length === 0 && (
+          <div className="text-center py-10 bg-gray-50 rounded-xl">
+            <p className="text-xl font-semibold text-gray-700">No reviews yet.</p>
+            <p className="text-gray-500">Be the first one to share your thoughts!</p>
+          </div>
+        )}
+
+        <div className="space-y-8">
           {reviews.map((review) => (
-            <div key={review.id} className="p-4 border border-gray-200 rounded-lg">
-              <p className="text-xl font-bold text-gray-800">{review.rating} / 10</p>
-              <p className="my-2 text-gray-700">{review.body}</p>
-              <p className="text-sm text-gray-500">Posted on: {new Date(review.created_at).toLocaleString()}</p>
+            <div key={review.id} className="p-6 bg-white border-l-4 border-indigo-500 rounded-r-xl shadow-md transition-transform duration-300 hover:scale-102">
+              <div className="flex items-center mb-4">
+                <img src={review.user.image} alt={review.user.name} className="w-12 h-12 rounded-full mr-4" />
+                <div>
+                  <p className="font-bold text-gray-800">{review.user.name}</p>
+                  <p className="text-sm text-gray-500">{new Date(review.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div className="flex items-baseline justify-between mb-3">
+                <p className="text-2xl font-bold text-indigo-600">{review.rating} / 10</p>
+              </div>
+              <p className="text-gray-800 leading-relaxed">{review.body}</p>
             </div>
           ))}
         </div>

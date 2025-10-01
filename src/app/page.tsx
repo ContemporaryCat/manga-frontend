@@ -1,8 +1,12 @@
 import Link from 'next/link';
+import AuthButtons from '@/components/AuthButtons';
 
 export default function HomePage() {
   return (
     <main className="flex flex-col items-center justify-center h-screen bg-gray-50">
+      <div className="absolute top-4 right-4">
+        <AuthButtons />
+      </div>
       <h1 className="text-4xl font-bold mb-8">Manga Demo Site</h1>
       <Link href="/series/1" className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md text-lg hover:bg-blue-700">
         Go to Demo Manga Page (ID: 1)
