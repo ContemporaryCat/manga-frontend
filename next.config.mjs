@@ -20,6 +20,7 @@ const nextConfig = {
             }
         ],
     },
+    transpilePackages: ['@auth/next'], // Add this line
 };
 
 export default nextConfig;
