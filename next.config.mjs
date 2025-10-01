@@ -1,4 +1,6 @@
 // next.config.mjs
+import path from 'path'; // Import path module
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     compiler: {
@@ -20,7 +22,15 @@ const nextConfig = {
             }
         ],
     },
-    transpilePackages: ['@auth/next'], // Add this line
+    transpilePackages: ['@auth/next'],
+    webpack: (config, { isServer }) => {
+        // Add a custom alias for @auth/next/react
+        config.resolve.alias['@auth/next/react'] = path.resolve(
+            process.cwd(),
+            'node_modules/@auth/next/react'
+        );
+        return config;
+    },
 };
 
 export default nextConfig;
