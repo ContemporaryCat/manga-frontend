@@ -8,7 +8,9 @@ interface AuthContextType {
   token: string | null;
   isLoadingAuth: boolean;
   login: (username: string, password: string) => Promise<boolean>;
+  register: (username: string, password: string, email: string) => Promise<boolean>; // Added register
   logout: () => void;
+  checkAuth: () => Promise<void>; // Added checkAuth
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,20 +36,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
-  useEffect(() => {
+  const checkAuth = useCallback(async () => {
+    setIsLoadingAuth(true);
     const storedToken = localStorage.getItem('authToken');
     if (storedToken) {
       const decoded = decodeJwt(storedToken);
-      if (decoded && decoded.exp * 1000 > Date.now()) { // Check expiration
+      // In a real app, you might want to send this token to your backend
+      // for full validation (e.g., check if user still exists, token revoked)
+      if (decoded && decoded.exp * 1000 > Date.now()) {
         setToken(storedToken);
         setIsAuthenticated(true);
-        setUser({ name: decoded.username || "User", email: decoded.email || "" }); // Use decoded info
+        setUser({ name: decoded.username || "User", email: decoded.email || "" });
       } else {
-        localStorage.removeItem('authToken'); // Token expired or invalid
+        localStorage.removeItem('authToken');
+        setToken(null);
+        setIsAuthenticated(false);
+        setUser(null);
       }
+    } else {
+      setToken(null);
+      setIsAuthenticated(false);
+      setUser(null);
     }
     setIsLoadingAuth(false);
   }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const login = useCallback(async (username: string, password: string) => {
     try {
@@ -82,6 +98,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const register = useCallback(async (username: string, password: string, email: string) => {
+    try {
+      const response = await fetch('https://manga-api.warpe.workers.dev/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password, email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
+
+      // No token returned on register, just success message
+      return true;
+    } catch (error) {
+      console.error('Registration error:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('An unknown error occurred during registration.');
+      }
+      return false;
+    }
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('authToken');
     setToken(null);
@@ -96,7 +140,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     token,
     isLoadingAuth,
     login,
+    register,
     logout,
+    checkAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
