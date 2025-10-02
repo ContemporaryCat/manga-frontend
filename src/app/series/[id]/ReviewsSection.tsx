@@ -5,7 +5,15 @@
 // Import useCallback along with the other hooks
 import { useState, useEffect, FormEvent, useCallback } from 'react';
 
-import { useSession } from "next-auth/react";
+// Placeholder for custom authentication logic
+const useAuth = () => {
+  // In a real implementation, this would check for a token in local storage or a cookie
+  const isAuthenticated = false; // Replace with actual auth state
+  const user = { name: "Guest" }; // Replace with actual user data
+  const token = "fake-jwt-token"; // Placeholder for JWT token
+
+  return { isAuthenticated, user, token };
+};
 
 // Define the structure of a review object
 interface Review {
@@ -20,7 +28,9 @@ interface Review {
 }
 
 export default function ReviewsSection({ seriesId }: { seriesId: number }) {
-  const { data: session } = useSession();
+  const { isAuthenticated, user, token } = useAuth(); // Use placeholder auth
+  const session = isAuthenticated ? { user, jwt: token } : null; // Create a mock session object
+
   // State variables to manage data and UI status
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +81,7 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.jwt}`
+          'Authorization': `Bearer ${session.jwt}` // Use placeholder token
         },
         body: JSON.stringify({
           rating: Number(newRating),
@@ -109,19 +119,19 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
       {session ? (
         <form onSubmit={handleSubmit} className="mb-12 p-8 bg-white rounded-2xl shadow-lg transition-shadow duration-300 hover:shadow-xl">
           <h3 className="text-2xl font-bold mb-6 text-gray-800">Leave a Review</h3>
-          
+
           {/* Rating Slider */}
           <div className="mb-6">
             <label htmlFor="rating" className="block font-semibold mb-3 text-gray-700 text-lg">
               Rating: <span className="font-black text-indigo-600">{newRating} / 10</span>
             </label>
-            <input 
-              id="rating" 
-              type="range" 
-              min="1" 
-              max="10" 
-              value={newRating} 
-              onChange={(e) => setNewRating(Number(e.target.value))} 
+            <input
+              id="rating"
+              type="range"
+              min="1"
+              max="10"
+              value={newRating}
+              onChange={(e) => setNewRating(Number(e.target.value))}
               className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
               style={{
                 background: `linear-gradient(to right, #4f46e5 ${newRating * 10}%, #e5e7eb ${newRating * 10}%)`
@@ -132,15 +142,15 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
           {/* Review Text Area */}
           <div className="mb-6">
             <label htmlFor="body" className="block font-semibold mb-3 text-gray-700 text-lg">Your Review</label>
-            <textarea 
-              id="body" 
-              rows={6} 
-              value={newBody} 
-              onChange={(e) => setNewBody(e.target.value)} 
-              maxLength={7500} 
-              placeholder="Share your thoughts on the series. What did you like or dislike?" 
-              className="w-full p-4 border border-gray-300 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 shadow-sm" 
-              required 
+            <textarea
+              id="body"
+              rows={6}
+              value={newBody}
+              onChange={(e) => setNewBody(e.target.value)}
+              maxLength={7500}
+              placeholder="Share your thoughts on the series. What did you like or dislike?"
+              className="w-full p-4 border border-gray-300 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 shadow-sm"
+              required
             />
           </div>
 
@@ -148,9 +158,9 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
           {error && <p className="text-red-600 mb-6 bg-red-100 p-3 rounded-lg">{error}</p>}
 
           {/* Submit Button */}
-          <button 
-            type="submit" 
-            disabled={isSubmitting} 
+          <button
+            type="submit"
+            disabled={isSubmitting}
             className="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-xl shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100"
           >
             {isSubmitting ? "Submitting..." : "Submit Review"}
@@ -171,7 +181,7 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
             {/* You can add a spinner here */}
           </div>
         )}
-        
+
         {!isLoading && reviews.length === 0 && (
           <div className="text-center py-10 bg-gray-50 rounded-xl">
             <p className="text-xl font-semibold text-gray-700">No reviews yet.</p>
