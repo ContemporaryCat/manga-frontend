@@ -43,7 +43,11 @@ export const useAuth = () => {
       return true;
     } catch (error) {
       console.error('Login error:', error);
-      alert(error.message);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('An unknown error occurred during login.');
+      }
       return false;
     }
   }, []);
