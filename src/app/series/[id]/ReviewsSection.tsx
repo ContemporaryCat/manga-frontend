@@ -4,7 +4,7 @@
 
 // Import useCallback along with the other hooks
 import { useState, useEffect, FormEvent, useCallback } from 'react';
-import { useAuth } from '@/components/AuthButtons'; // Import the useAuth hook
+import { useAuth } from '@/context/AuthContext'; // Import useAuth from context
 
 // Define the structure of a review object
 interface Review {
@@ -19,7 +19,7 @@ interface Review {
 }
 
 export default function ReviewsSection({ seriesId }: { seriesId: number }) {
-  const { isAuthenticated, user, token } = useAuth(); // Use custom auth hook
+  const { isAuthenticated, token, isLoadingAuth } = useAuth(); // Use custom auth hook
 
   // State variables to manage data and UI status
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -106,7 +106,11 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
       <h2 className="text-4xl font-extrabold mb-8 text-gray-900">Customer Reviews</h2>
 
       {/* Review Submission Form */}
-      {isAuthenticated ? ( // Use isAuthenticated
+      {isLoadingAuth ? (
+        <div className="text-center py-10 bg-gray-50 rounded-xl">
+          <p className="text-xl font-semibold text-gray-700">Loading authentication state...</p>
+        </div>
+      ) : isAuthenticated ? (
         <form onSubmit={handleSubmit} className="mb-12 p-8 bg-white rounded-2xl shadow-lg transition-shadow duration-300 hover:shadow-xl">
           <h3 className="text-2xl font-bold mb-6 text-gray-800">Leave a Review</h3>
 
