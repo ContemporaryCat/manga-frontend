@@ -70,7 +70,7 @@ export default function AuthButtons() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLoginSubmit = async (e) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await login(username, password);
   };
