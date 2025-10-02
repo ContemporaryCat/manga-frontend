@@ -20,7 +20,7 @@ export const useAuth = () => {
     }
   }, []);
 
-  const login = useCallback(async (username, password) => {
+  const login = useCallback(async (username: string, password: string) => {
     try {
       const response = await fetch('https://manga-api.warpe.workers.dev/api/auth/login', {
         method: 'POST',
