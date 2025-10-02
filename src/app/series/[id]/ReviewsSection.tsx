@@ -199,3 +199,4 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
       </div>
     </div>
   );
+}
