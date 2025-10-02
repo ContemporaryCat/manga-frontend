@@ -1,31 +1,80 @@
 "use client";
 
-// Placeholder for custom authentication logic
+import { useState, useEffect, useCallback } from 'react';
+
+// Custom authentication hook
 const useAuth = () => {
-  // In a real implementation, this would check for a token in local storage or a cookie
-  const isAuthenticated = false; // Replace with actual auth state
-  const user = { name: "Guest" }; // Replace with actual user data
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ name: string } | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  const login = () => {
-    alert("Login function (placeholder)");
-    // Implement actual login logic here, interacting with your Better Auth Worker
-  };
+  // Check for token in localStorage on initial load
+  useEffect(() => {
+    const storedToken = localStorage.getItem('authToken');
+    if (storedToken) {
+      // In a real app, you'd validate this token with your backend
+      setToken(storedToken);
+      setIsAuthenticated(true);
+      // Fetch user details from backend if needed, or decode from JWT
+      setUser({ name: "Authenticated User" }); // Placeholder
+    }
+  }, []);
 
-  const logout = () => {
-    alert("Logout function (placeholder)");
-    // Implement actual logout logic here
-  };
+  const login = useCallback(async (username, password) => {
+    try {
+      const response = await fetch('https://manga-api.warpe.workers.dev/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-  return { isAuthenticated, user, login, logout };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('authToken', data.token);
+      setToken(data.token);
+      setIsAuthenticated(true);
+      setUser({ name: "Authenticated User" }); // Replace with actual user data from login response
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      alert(error.message);
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('authToken');
+    setToken(null);
+    setIsAuthenticated(false);
+    setUser(null);
+    alert("Logged out!");
+  }, []);
+
+  return { isAuthenticated, user, token, login, logout };
 };
 
 export default function AuthButtons() {
   const { isAuthenticated, user, login, logout } = useAuth();
 
+  // Placeholder for login form
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    await login(username, password);
+  };
+
   if (isAuthenticated) {
     return (
       <>
-        {user.name} <br />
+        {user?.name} <br />
         <button onClick={logout}>Sign out</button>
       </>
     );
@@ -33,7 +82,21 @@ export default function AuthButtons() {
   return (
     <>
       Not signed in <br />
-      <button onClick={login}>Sign in</button>
+      <form onSubmit={handleLoginSubmit}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Sign in</button>
+      </form>
     </>
   );
 }

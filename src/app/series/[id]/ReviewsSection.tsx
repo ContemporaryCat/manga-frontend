@@ -4,16 +4,7 @@
 
 // Import useCallback along with the other hooks
 import { useState, useEffect, FormEvent, useCallback } from 'react';
-
-// Placeholder for custom authentication logic
-const useAuth = () => {
-  // In a real implementation, this would check for a token in local storage or a cookie
-  const isAuthenticated = false; // Replace with actual auth state
-  const user = { name: "Guest" }; // Replace with actual user data
-  const token = "fake-jwt-token"; // Placeholder for JWT token
-
-  return { isAuthenticated, user, token };
-};
+import useAuth from '@/components/AuthButtons'; // Import the useAuth hook
 
 // Define the structure of a review object
 interface Review {
@@ -28,8 +19,7 @@ interface Review {
 }
 
 export default function ReviewsSection({ seriesId }: { seriesId: number }) {
-  const { isAuthenticated, user, token } = useAuth(); // Use placeholder auth
-  const session = isAuthenticated ? { user, jwt: token } : null; // Create a mock session object
+  const { isAuthenticated, user, token } = useAuth(); // Use custom auth hook
 
   // State variables to manage data and UI status
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -69,7 +59,7 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
     setIsSubmitting(true);
     setError(null);
 
-    if (!session) {
+    if (!isAuthenticated || !token) { // Check isAuthenticated and token
       setError("You must be signed in to leave a review.");
       setIsSubmitting(false);
       return;
@@ -81,7 +71,7 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.jwt}` // Use placeholder token
+          'Authorization': `Bearer ${token}` // Use actual token from useAuth
         },
         body: JSON.stringify({
           rating: Number(newRating),
@@ -97,7 +87,7 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
       // On success, clear the form AND reload the reviews list.
       setNewBody("");
       setNewRating(8);
-      fetchReviews(); // <-- THIS IS THE FIX!
+      fetchReviews();
 
     } catch (err) {
       if (err instanceof Error) {
@@ -116,7 +106,7 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
       <h2 className="text-4xl font-extrabold mb-8 text-gray-900">Customer Reviews</h2>
 
       {/* Review Submission Form */}
-      {session ? (
+      {isAuthenticated ? ( // Use isAuthenticated
         <form onSubmit={handleSubmit} className="mb-12 p-8 bg-white rounded-2xl shadow-lg transition-shadow duration-300 hover:shadow-xl">
           <h3 className="text-2xl font-bold mb-6 text-gray-800">Leave a Review</h3>
 
@@ -209,4 +199,3 @@ export default function ReviewsSection({ seriesId }: { seriesId: number }) {
       </div>
     </div>
   );
-}
