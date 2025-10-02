@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // Custom authentication hook
-const useAuth = () => {
+export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ name: string } | null>(null);
   const [token, setToken] = useState<string | null>(null);

@@ -4,7 +4,7 @@
 
 // Import useCallback along with the other hooks
 import { useState, useEffect, FormEvent, useCallback } from 'react';
-import useAuth from '@/components/AuthButtons'; // Import the useAuth hook
+import { useAuth } from '@/components/AuthButtons'; // Import the useAuth hook
 
 // Define the structure of a review object
 interface Review {
